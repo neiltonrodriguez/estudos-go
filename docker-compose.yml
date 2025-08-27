@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password # Senha do root (para testes)
+      MYSQL_DATABASE: user_db            # Nome do banco de dados
+      MYSQL_USER: user                   # Nome do usuário
+      MYSQL_PASSWORD: password           # Senha do usuário
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql # Persiste os dados do banco
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql # Executa script na inicialização
+    networks:
+      - app-network
+
+  app:
+    build:
+      context: . # Constrói a imagem Docker a partir do Dockerfile na raiz
+      dockerfile: Dockerfile
+    container_name: go-app
+    ports:
+      - "8080:8080" # Porta da aplicação Go
+    environment:
+      DB_HOST: db                   # Nome do serviço do banco de dados no Docker Compose
+      DB_PORT: 3306
+      DB_USER: user
+      DB_PASSWORD: password
+      DB_NAME: user_db
+    depends_on:
+      - db # Garante que o banco de dados seja iniciado antes da aplicação
+    networks:
+      - app-network
+
+volumes:
+  db_data:
+
+networks:
+  app-network:
+    driver: bridge
