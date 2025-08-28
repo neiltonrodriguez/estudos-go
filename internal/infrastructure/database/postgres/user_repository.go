@@ -41,6 +41,7 @@ func (r *PostgresUserRepository) GetByEmail(email string) (*domain.User, error) 
 		r.logger.Error("failed to get user by email: %v", err)
 		return nil, fmt.Errorf("failed to get user by email from Postgres: %w", err)
 	}
+	r.logger.Info("Get user with successfully", user.Email)
 	return user, nil
 }
 
